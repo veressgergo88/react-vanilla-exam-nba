@@ -5,7 +5,7 @@ const client = axios.create({
   baseURL: "http://localhost:8080"
 })
 
-const getTeams = async (teamName?: string): Promise<AxiosResponse | null> => {
+export const getTeams = async (teamName?: string): Promise<AxiosResponse | null> => {
   try {
     const params = teamName ? { teamName } : { }
     const response = await client.get("/api/teams", { params })
@@ -15,22 +15,22 @@ const getTeams = async (teamName?: string): Promise<AxiosResponse | null> => {
   }
 }
 
-const PlayerResponse = z.object({
+const PlayerSchema = z.object({
     id: z.number(),
     name: z.string()
 })
 
-const TeamResponse = z.object({
+const TeamSchema = z.object({
   id: z.number(),
   name: z.string(),
-  players: PlayerResponse.array() 
+  players: PlayerSchema.array() 
 })
 
-export type PlayerResponse = z.infer<typeof PlayerResponse>
-export type TeamResponse = z.infer<typeof TeamResponse>
+export type Player = z.infer<typeof PlayerSchema>
+export type Team = z.infer<typeof TeamSchema>
 
-const validateTeams = (response: AxiosResponse): TeamResponse | null => {
-  const result = TeamResponse.safeParse(response.data)
+const validateTeams = (response: AxiosResponse): Team[] | null => {
+  const result = TeamSchema.array().safeParse(response.data)
   if (!result.success) {
     return null
   }
@@ -46,7 +46,7 @@ type Response<Type> = {
   success: false
 }
 
-export const loadTeams = async (teams?: string): Promise<Response<TeamResponse>> => {
+export const loadTeams = async (teams?: string): Promise<Response<Team[]>> => {
   const response = await getTeams(teams)
   if (!response)
     return { success: false, status: 0  }
