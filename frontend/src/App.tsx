@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { loadTeams, type Team } from "./api";
+import { postVote } from "./api/post";
 
 export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState("Select a team");
-  const [valamiInput, setValamiInput] = useState("")
+  const teamData = useMemo(() => teams.find((t) => t.name === selectedTeam),[selectedTeam]);
 
   const loadTeamsHandler = async () => {
     const response = await loadTeams();
@@ -16,11 +17,18 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    loadTeamsHandler();
-  }, []);
+  const voteHandler = async (playerId:number) => {
+      const response = await postVote(playerId)
+      if (response.success){
+        console.log("The vote was sent")
+      } else {
+        console.log("The vote wasn't sent!")
+      }
+  }
 
-  const teamData = useMemo(() => teams.find((t) => t.name === selectedTeam),[selectedTeam]);
+  useEffect(() => {
+    loadTeamsHandler()
+  }, [])
   
   return (
     <div className="card w-96 bg-base-100 shadow-xl">
@@ -55,7 +63,7 @@ export default function App() {
                 key={player.id}
               >
                 <h2 className="text-xl">{player.name}</h2>
-                <button className="btn btn-primary">Vote</button>
+                <button className="btn btn-primary" onClick={() => voteHandler(player.id)}>Vote</button>
               </li>
             ))}
           </ul>
