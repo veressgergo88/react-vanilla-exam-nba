@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { loadTeams, type Team } from "./api";
 import { postVote } from "./api/post";
+import Select from "./components/Select";
 
 export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState("Select a team");
-  const teamData = useMemo(() => teams.find((t) => t.name === selectedTeam),[selectedTeam]);
+  const [selectedTeam, setSelectedTeam] = useState("");
 
   const loadTeamsHandler = async () => {
     const response = await loadTeams();
@@ -17,13 +17,15 @@ export default function App() {
     }
   };
 
+  const teamData = useMemo(() => teams.find((t) => t.name === selectedTeam),[selectedTeam]);
+
   const voteHandler = async (playerId:number) => {
-      const response = await postVote(playerId)
-      if (response.success){
-        console.log("The vote was sent")
-      } else {
-        console.log("The vote wasn't sent!")
-      }
+    const response = await postVote(playerId)
+    if (response.success){
+      console.log("The vote was sent")
+    } else {
+      console.log("The vote wasn't sent!")
+    }
   }
 
   useEffect(() => {
@@ -37,22 +39,7 @@ export default function App() {
           <h1>Vote NBA players</h1>
         </div>
         <div>
-          <label>
-            Select your favorite player's team
-            <h1>{error}</h1>
-            <select
-              className="select select-bordered w-full max-w-xs"
-              value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
-            >
-              <option>{selectedTeam}</option>
-              {teams.map((team) => (
-                <option key={team.id} value={team.name}>
-                  {team.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Select error={error} teams={teams} selectedTeam={selectedTeam}/>
         </div>
 
         {teamData?.players.length ? (
